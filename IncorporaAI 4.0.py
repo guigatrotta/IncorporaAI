@@ -62,20 +62,20 @@ falhas_seguidas = 0
 limite_falhas = 5
 start_time = time.time()
 
+def safe_find(xpath):
+    try:
+        return driver.find_element(By.XPATH, xpath).text
+    except NoSuchElementException:
+        return ""
+
+def safe_href(xpath):
+    try:
+        return driver.find_element(By.XPATH, xpath).get_attribute("href")
+    except NoSuchElementException:
+        return ""
+
 while True:
     try:
-        def safe_find(xpath):
-            try:
-                return driver.find_element(By.XPATH, xpath).text
-            except NoSuchElementException:
-                return ""
-
-        def safe_href(xpath):
-            try:
-                return driver.find_element(By.XPATH, xpath).get_attribute("href")
-            except NoSuchElementException:
-                return ""
-
         base_xpath = f"/html/body/div[1]/div[2]/div/div/div[2]/div[2]/div[2]/div[{anuncio_index}]/div/div[1]/div[2]/div[1]/div[1]"
         valor = safe_find(f"{base_xpath}/div[1]/div/div/div/div[1]/div")
         endereco = safe_find(f"{base_xpath}/div[2]/div/div")

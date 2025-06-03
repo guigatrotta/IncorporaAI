@@ -22,11 +22,11 @@ if st.button("Executar Scraping"):
         edgedriver_path = os.path.join(os.getcwd(), "msedgedriver.exe")
         with open(edgedriver_path, "wb") as f:
             f.write(edgedriver_file.getvalue())
-        
+
         # Salvar inputs em inputs.txt
         with open("inputs.txt", "w") as f:
             f.write(f"{edgedriver_path}\n{url}\n{excel_name}\n{'s' if buscar_guias else 'n'}")
-        
+
         # Executar o script principal com o mesmo Python do ambiente atual
         try:
             result = subprocess.run([sys.executable, "IncorporaAI 4.0.py"], capture_output=True, text=True)
@@ -35,12 +35,12 @@ if st.button("Executar Scraping"):
                 st.error(f"Erro: {result.stderr}")
             else:
                 st.success("Scraping concluído!")
-                
+
                 # Fornecer links de download
                 excel_path = os.path.join("./temp", f"{excel_name}.xlsx")
                 csv_path = os.path.join("./temp", "output.csv")
                 zip_path = os.path.join("./temp", "guias_amarelas.zip") if buscar_guias else None
-                
+
                 if os.path.exists(excel_path):
                     with open(excel_path, "rb") as f:
                         st.download_button(

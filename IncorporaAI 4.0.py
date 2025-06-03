@@ -4,6 +4,7 @@ import csv
 import time
 import requests
 import pandas as pd
+import zipfile
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -20,20 +21,18 @@ def get_user_inputs():
         lines = f.readlines()
     return {
         "edgedriver_path": lines[0].strip(),
-        "pasta_imoveis": lines[1].strip(),
-        "pasta_guias": lines[2].strip(),
-        "csv_caminho": lines[3].strip(),
-        "url": lines[4].strip(),
-        "excel_name": lines[5].strip(),
-        "buscar_guias": lines[6].strip().lower() == "s"
+        "url": lines[1].strip(),
+        "excel_name": lines[2].strip(),
+        "buscar_guias": lines[3].strip().lower() == "s"
     }
+
+# Criar diretório temporário
+temp_dir = "./temp"
+os.makedirs(temp_dir, exist_ok=True)
 
 # Coleta os caminhos
 inputs = get_user_inputs()
 EDGEDRIVER_PATH = inputs["edgedriver_path"]
-PASTA_IMOVEIS = inputs["pasta_imoveis"]
-PASTA_GUIAS = inputs["pasta_guias"]
-CSV_CAMINHO = inputs["csv_caminho"]
 url = inputs["url"]
 nome_arquivo = inputs["excel_name"]
 buscar_guias = inputs["buscar_guias"]
@@ -117,8 +116,7 @@ while True:
 driver.quit()
 
 # Processamento e exportação
-os.makedirs(PASTA_IMOVEIS, exist_ok=True)
-caminho_arquivo = os.path.join(PASTA_IMOVEIS, f"{nome_arquivo}.xlsx")
+caminho_arquivo = os.path.join(temp_dir, f"{nome_arquivo}.xlsx")
 
 df = pd.DataFrame(imoveis)
 df["Valor"] = df["Valor"].str.replace("R\\$|\\.", "", regex=True).str.replace(",", ".").apply(pd.to_numeric, errors='coerce')
@@ -132,8 +130,9 @@ media["Endereco"] = "Média"; media["Bairro"] = "-"; media["Link"] = "-"
 df = pd.concat([df, media], ignore_index=True, sort=False)
 df = df[["Endereco", "Bairro", "Valor", "Area", "Valor por m²", "Quartos", "Banheiros", "Vagas", "Link"]]
 df.to_excel(caminho_arquivo, index=False)
-print(f"Arquivo salvo em: {caminho_arquivo}")
+print(f"Arquivo Excel salvo em: {caminho_arquivo}")
 
+caminho_csv = os.path.join(temp_dir, "output.csv")
 enderecos = []
 for end in df["Endereco"][:-1]:
     match = re.match(r"(.+?),?\s?(\d+.*)", end)
@@ -145,18 +144,19 @@ for end in df["Endereco"][:-1]:
     else:
         print(f"Ignorado: {end}")
 
-with open(CSV_CAMINHO, "w", newline='', encoding='latin-1') as f:
+with open(caminho_csv, "w", newline='', encoding='latin-1') as f:
     writer = csv.writer(f)
     writer.writerow(["logradouro", "numero", "bairro"])
     writer.writerows(enderecos)
-print(f"CSV salvo em: {CSV_CAMINHO}")
+print(f"Arquivo CSV salvo em: {caminho_csv}")
 
 if buscar_guias:
     driver = webdriver.Edge(service=Service(executable_path=EDGEDRIVER_PATH), options=options)
     wait = WebDriverWait(driver, 15)
-    os.makedirs(PASTA_GUIAS, exist_ok=True)
+    pdf_dir = os.path.join(temp_dir, "pdfs")
+    os.makedirs(pdf_dir, exist_ok=True)
 
-    with open(CSV_CAMINHO, newline='', encoding='latin-1') as csvfile:
+    with open(caminho_csv, newline='', encoding='latin-1') as csvfile:
         reader = list(csv.reader(csvfile, delimiter=','))
         total = len(reader) - 1
         start_time_guias = time.time()
@@ -219,7 +219,7 @@ if buscar_guias:
                 response = requests.get(pdf_url, headers=headers)
                 if response.status_code == 200 and b"%PDF" in response.content[:10]:
                     nome_final = f"{bairro}-{numero_input}.pdf"
-                    caminho_final = os.path.join(PASTA_GUIAS, nome_final)
+                    caminho_final = os.path.join(pdf_dir, nome_final)
                     with open(caminho_final, 'wb') as f:
                         f.write(response.content)
                     print(f"✅ PDF salvo como: {nome_final}")
@@ -239,3 +239,12 @@ if buscar_guias:
 
     driver.quit()
     print("\U0001F3C1 Processo finalizado.")
+
+    # Criar ZIP com os PDFs
+    zip_path = os.path.join(temp_dir, "guias_amarelas.zip")
+    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for root, _, files in os.walk(pdf_dir):
+            for file in files:
+                file_path = os.path.join(root, file)
+                zipf.write(file_path, os.path.relpath(file_path, temp_dir))
+    print(f"Arquivo ZIP salvo em: {zip_path}")

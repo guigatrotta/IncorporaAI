@@ -5,16 +5,27 @@ import os
 st.title("IncorporaAI - Scraping de Imóveis")
 
 st.write("Selecione os arquivos e pastas para executar o scraping de imóveis do Imovelweb e, opcionalmente, baixar Guias Amarelas.")
-st.write("Para pastas, insira o caminho manualmente ou copie e cole o caminho após abrir o explorador de arquivos do sistema.")
+st.write("Para pastas, selecione qualquer arquivo dentro da pasta desejada usando 'Browse files'.")
+
+# Função para extrair caminho da pasta a partir de um arquivo selecionado
+def get_folder_path(file):
+    if file and len(file) > 0:
+        return os.path.dirname(file[0].name) if hasattr(file[0], 'name') else ""
+    return ""
 
 # Formulário para inputs
 edgedriver_file = st.file_uploader("Selecione o EdgeDriver (msedgedriver.exe):", type=["exe"], key="edgedriver")
-pasta_imoveis = st.text_input("Selecionar Pasta para salvar os arquivos Excel:", key="pasta_imoveis", placeholder="Ex.: C:/Users/SeuUsuario/Pastas/Imoveis")
-pasta_guias = st.text_input("Selecionar Pasta para salvar as Guias Amarelas (PDF):", key="pasta_guias", placeholder="Ex.: C:/Users/SeuUsuario/Pastas/Guias")
-csv_folder = st.text_input("Selecionar Pasta para o arquivo CSV:", key="csv_folder", placeholder="Ex.: C:/Users/SeuUsuario/Pastas/CSV")
+pasta_imoveis_files = st.file_uploader("Selecionar Pasta para salvar os arquivos Excel:", type=["*"], accept_multiple_files=True, key="pasta_imoveis")
+pasta_guias_files = st.file_uploader("Selecionar Pasta para salvar as Guias Amarelas (PDF):", type=["*"], accept_multiple_files=True, key="pasta_guias")
+csv_files = st.file_uploader("Selecionar Pasta para o arquivo CSV:", type=["*"], accept_multiple_files=True, key="csv")
 url = st.text_input("Link da página do Imovelweb:", key="url")
 excel_name = st.text_input("Nome do arquivo Excel (sem extensão):", key="excel_name")
 buscar_guias = st.checkbox("Buscar Guias Amarelas após o scraping", key="buscar_guias")
+
+# Extrair caminhos de pastas
+pasta_imoveis = get_folder_path(pasta_imoveis_files)
+pasta_guias = get_folder_path(pasta_guias_files)
+csv_folder = get_folder_path(csv_files)
 
 # Definir caminho padrão para o CSV (usando a pasta selecionada e um nome fixo)
 csv_caminho = os.path.join(csv_folder, "output.csv") if csv_folder else ""

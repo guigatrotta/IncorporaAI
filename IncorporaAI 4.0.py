@@ -13,7 +13,6 @@ from selenium.webdriver.edge.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
-from datetime import datetime
 
 # Função para ler inputs de um arquivo inputs.txt
 def get_user_inputs():

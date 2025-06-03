@@ -5,7 +5,6 @@ from selenium.webdriver.edge.options import Options
 from webdriver_manager.microsoft import MsEdgeDriverManager
 import pandas as pd
 import os
-import zipfile
 import re
 import time
 import csv

@@ -8,16 +8,21 @@ st.title("IncorporaAI - Scraping de Imóveis")
 st.write("Insira os dados para executar o scraping de imóveis do Imovelweb e, opcionalmente, baixar Guias Amarelas.")
 st.write("Após a execução, links para download dos arquivos gerados serão fornecidos.")
 
-# Inputs fixos locais
-edgedriver_path = os.path.join(os.getcwd(), "drivers", "msedgedriver.exe")
+# Inputs com upload do EdgeDriver
+edgedriver_file = st.file_uploader("Selecione o EdgeDriver (msedgedriver.exe):", type=["exe"], key="edgedriver")
 url = st.text_input("Link da página do Imovelweb:", key="url")
 excel_name = st.text_input("Nome do arquivo Excel (sem extensão):", key="excel_name")
 buscar_guias = st.checkbox("Buscar Guias Amarelas após o scraping", key="buscar_guias")
 
 if st.button("Executar Scraping"):
-    if not all([os.path.exists(edgedriver_path), url, excel_name]):
-        st.error("Preencha todos os campos corretamente e verifique o caminho do EdgeDriver!")
+    if not all([edgedriver_file, url, excel_name]):
+        st.error("Preencha todos os campos corretamente e selecione o arquivo EdgeDriver!")
     else:
+        # Salvar EdgeDriver em arquivo temporário e dar permissão (Windows já permite por padrão)
+        edgedriver_path = os.path.join(os.getcwd(), "msedgedriver.exe")
+        with open(edgedriver_path, "wb") as f:
+            f.write(edgedriver_file.getvalue())
+
         # Salvar inputs em inputs.txt
         with open("inputs.txt", "w") as f:
             f.write(f"{edgedriver_path}\n{url}\n{excel_name}\n{'s' if buscar_guias else 'n'}")
@@ -63,5 +68,7 @@ if st.button("Executar Scraping"):
         except Exception as e:
             st.error(f"Erro ao executar o script: {e}")
         finally:
+            if os.path.exists(edgedriver_path):
+                os.remove(edgedriver_path)
             if os.path.exists("inputs.txt"):
                 os.remove("inputs.txt")

@@ -14,9 +14,9 @@ def get_folder_path(file):
 
 # Formulário para inputs
 edgedriver_file = st.file_uploader("Selecione o EdgeDriver (msedgedriver.exe):", type=["exe"], key="edgedriver")
-pasta_imoveis_file = st.file_uploader("Selecione um arquivo na pasta para salvar os arquivos Excel:", type=["*"], key="pasta_imoveis")
-pasta_guias_file = st.file_uploader("Selecione um arquivo na pasta para salvar as Guias Amarelas (PDF):", type=["*"], key="pasta_guias")
-csv_file = st.file_uploader("Selecione o arquivo CSV para salvar:", type=["csv"], key="csv")
+pasta_imoveis_file = st.file_uploader("Selecionar Pasta para salvar os arquivos Excel:", type=["*"], key="pasta_imoveis")
+pasta_guias_file = st.file_uploader("Selecionar Pasta para salvar as Guias Amarelas (PDF):", type=["*"], key="pasta_guias")
+csv_file = st.file_uploader("Selecionar Pasta para o arquivo CSV:", type=["csv"], key="csv")
 url = st.text_input("Link da página do Imovelweb:", key="url")
 excel_name = st.text_input("Nome do arquivo Excel (sem extensão):", key="excel_name")
 buscar_guias = st.checkbox("Buscar Guias Amarelas após o scraping", key="buscar_guias")

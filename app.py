@@ -1,6 +1,7 @@
 import streamlit as st
 import subprocess
 import os
+import sys
 
 st.title("IncorporaAI - Scraping de Imóveis")
 
@@ -26,9 +27,9 @@ if st.button("Executar Scraping"):
         with open("inputs.txt", "w") as f:
             f.write(f"{edgedriver_path}\n{url}\n{excel_name}\n{'s' if buscar_guias else 'n'}")
         
-        # Executar o script principal
+        # Executar o script principal com o mesmo Python do ambiente atual
         try:
-            result = subprocess.run(["python", "IncorporaAI 4.0.py"], capture_output=True, text=True)
+            result = subprocess.run([sys.executable, "IncorporaAI 4.0.py"], capture_output=True, text=True)
             st.text_area("Saída do Script", result.stdout, height=300)
             if result.stderr:
                 st.error(f"Erro: {result.stderr}")

@@ -1,49 +1,29 @@
 import streamlit as st
 import subprocess
 import os
-import streamlit.components.v1 as components
 
 st.title("IncorporaAI - Scraping de Imóveis")
 
 st.write("Selecione os arquivos e pastas para executar o scraping de imóveis do Imovelweb e, opcionalmente, baixar Guias Amarelas.")
 
-# JavaScript para abrir diálogo de seleção de pasta
-folder_picker_html = """
-<script>
-function openFolderPicker(inputId) {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.webkitdirectory = true;
-    input.onchange = (e) => {
-        if (e.target.files.length > 0) {
-            const path = e.target.files[0].webkitRelativePath.split('/')[0];
-            document.getElementById(inputId).value = path;
-        }
-    };
-    input.click();
-}
-</script>
-"""
-
-# Função para renderizar botão de seleção de pasta
-def folder_picker(label, key):
-    st.write(label)
-    path = st.text_input(f"Caminho selecionado para {key}:", key=key)
-    components.html(f"""
-        {folder_picker_html}
-        <button onclick="openFolderPicker('{key}_input')">Selecionar Pasta</button>
-        <input type="hidden" id="{key}_input">
-    """, height=50)
-    return path
+# Função para extrair caminho da pasta a partir de um arquivo selecionado
+def get_folder_path(file):
+    if file:
+        return os.path.dirname(file.name) if hasattr(file, 'name') else ""
+    return ""
 
 # Formulário para inputs
 edgedriver_file = st.file_uploader("Selecione o EdgeDriver (msedgedriver.exe):", type=["exe"], key="edgedriver")
-pasta_imoveis = folder_picker("Selecione a pasta para salvar os arquivos Excel:", "pasta_imoveis")
-pasta_guias = folder_picker("Selecione a pasta para salvar as Guias Amarelas (PDF):", "pasta_guias")
+pasta_imoveis_file = st.file_uploader("Selecione um arquivo na pasta para salvar os arquivos Excel:", type=["*"], key="pasta_imoveis")
+pasta_guias_file = st.file_uploader("Selecione um arquivo na pasta para salvar as Guias Amarelas (PDF):", type=["*"], key="pasta_guias")
 csv_file = st.file_uploader("Selecione o arquivo CSV para salvar:", type=["csv"], key="csv")
 url = st.text_input("Link da página do Imovelweb:", key="url")
 excel_name = st.text_input("Nome do arquivo Excel (sem extensão):", key="excel_name")
 buscar_guias = st.checkbox("Buscar Guias Amarelas após o scraping", key="buscar_guias")
+
+# Extrair caminhos de pastas
+pasta_imoveis = get_folder_path(pasta_imoveis_file) if pasta_imoveis_file else ""
+pasta_guias = get_folder_path(pasta_guias_file) if pasta_guias_file else ""
 
 if st.button("Executar Scraping"):
     if not all([edgedriver_file, pasta_imoveis, pasta_guias, csv_file, url, excel_name]):

@@ -5,7 +5,7 @@ import os
 st.title("IncorporaAI - Scraping de Imóveis")
 
 st.write("Selecione os arquivos e pastas para executar o scraping de imóveis do Imovelweb e, opcionalmente, baixar Guias Amarelas.")
-st.write("Para pastas, selecione qualquer arquivo dentro da pasta desejada usando 'Browse files'.")
+st.write("Para selecionar pastas, clique em 'Browse files' e escolha qualquer arquivo dentro da pasta desejada. O script usará a pasta onde o arquivo está localizado.")
 
 # Função para extrair caminho da pasta a partir de um arquivo selecionado
 def get_folder_path(file):
@@ -26,6 +26,14 @@ buscar_guias = st.checkbox("Buscar Guias Amarelas após o scraping", key="buscar
 pasta_imoveis = get_folder_path(pasta_imoveis_files)
 pasta_guias = get_folder_path(pasta_guias_files)
 csv_folder = get_folder_path(csv_files)
+
+# Exibir pastas selecionadas (para feedback ao usuário)
+if pasta_imoveis:
+    st.success(f"Pasta para arquivos Excel selecionada: {pasta_imoveis}")
+if pasta_guias:
+    st.success(f"Pasta para Guias Amarelas selecionada: {pasta_guias}")
+if csv_folder:
+    st.success(f"Pasta para o arquivo CSV selecionada: {csv_folder}")
 
 # Definir caminho padrão para o CSV (usando a pasta selecionada e um nome fixo)
 csv_caminho = os.path.join(csv_folder, "output.csv") if csv_folder else ""
